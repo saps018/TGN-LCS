@@ -1,0 +1,73 @@
+run("Set Measurements...", "area mean integrated display scientific redirect=None decimal=0");
+run("Color Picker..."); 
+setForegroundColor(0, 0, 0);
+setBackgroundColor(0, 0, 0);
+run("Close");
+print("F", "N", "P1", "P2");
+pt = getDirectory("Welcome to saps Macro. Choose your working directory! ");
+ptt = pt + "TGN\\";
+ptg = pt + "GinR\\";
+ptgn = pt + "GinRN\\";
+File.makeDirectory(ptgn);
+count = 1; 
+listFiles(pt); 
+function listFiles(pt) {
+	list = getFileList(pt);
+	for (q=0; q<list.length; q++) {
+		if (endsWith(list[q], ".tif"))
+		n=((count++));
+	}
+	for (i=1; i<=n ; i++) {
+		imb = ptt+i+".tif";
+		open(imb);
+		run("Analyze Particles...", "size=35-1000 circularity=0.00-1.00 show=Nothing include add");
+		close();
+		ima = ptg+i+".tif";
+		open(ima);
+		roiManager("Show None");
+		roiManager("Show All");
+		roiManager("Combine");
+		run("Enlarge...", "enlarge=6");
+		run("Clear");
+		saveAs("Tiff", ptgn+i+".tif");
+		rename ("new");
+		if (isOpen("ROI Manager")) {
+			selectWindow("ROI Manager");
+			run("Close");
+		}
+		run("Select None");
+		open (ima);
+		rename("old");
+		proi = pt+i+".zip";
+		open(proi); 
+		nR = roiManager("count");
+		j=0;
+		while (j< nR){
+			selectWindow("old");
+			roiManager("Select", j);
+			run("Measure");
+			selectWindow("new");
+			roiManager("Select", j);
+			run("Measure");
+			tot = getResult ("IntDen", 0);
+			t1 =  getResult ("IntDen", 1);
+			f2 = (t1/tot)*100;
+			f1 = 100-f2;
+			print(i, j, f1, f2);
+			run("Clear Results");
+			j = j+1;
+		}
+		if (isOpen("ROI Manager")) {
+			selectWindow("ROI Manager");
+			run("Close");
+		}
+		close();
+		close();
+	}
+}
+selectWindow ("Results");
+run ("Close");
+selectWindow("Log");
+saveAs("Text", pt+"ATP7Blysogolgi.dat");
+run ("Close");
+			
